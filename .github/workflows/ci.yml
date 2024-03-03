@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  Ubuntu:
+    name: Ubuntu
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: |
+          sudo apt install -y gcc make autoconf automake libtool
+      - name: build
+        run: |
+          ./configure --enable-shared=yes --enable-static=no && make
+      - name: test
+        run: |
+          make check || (cat ./test-suite.log && exit 1)
+
+  Fedora:
+    name: Fedora
+    runs-on: ubuntu-22.04
+    container: fedora:rawhide
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: |
+          dnf install -y gcc make autoconf automake libtool xz-devel xz file diffutils
+      - name: build
+        run: |
+          ./configure --enable-shared=yes --enable-static=no && make
+      - name: test
+        run: |
+          make check || (cat ./test-suite.log && exit 1)
